@@ -12,7 +12,7 @@ function interpret_data(lines::Vector{String})
         polymer_dict[lines[1][i:i+1]] += 1
     end
 
-    return polymer_dict, decode_dict, lines[1]
+    return polymer_dict, decode_dict
 end
 
 function pol_convert(code::String, dict::Dict{String,Char})
@@ -20,18 +20,18 @@ function pol_convert(code::String, dict::Dict{String,Char})
 end
 
 
-function count_chars(polymer_dict::Dict{String,Int}, init_str::String)
+function count_chars(polymer_dict::Dict{String,Int})
     counter = Dict{Char,Int}(char => 0 for char in Set(string(keys(polymer_dict)...)))
     for key in keys(polymer_dict)
         num::Int = polymer_dict[key]
         counter[key[1]] += floor(UInt, num)
         counter[key[2]] += floor(UInt, num)
     end
-    counter[init_str[1]] += 1
-    counter[init_str[length(init_str)]] += 1
 
     for key in keys(counter)
-        counter[key] = floor(Int, counter[key] / 2)
+        #first and last char in polymer string is counted 1 less than others
+        #e.g. other = 2 * (other_occurances) but first = 2 * (first_occurances) - 1
+        counter[key] = ceil(Int, counter[key] / 2)
     end
 
     return counter
@@ -53,8 +53,8 @@ function step(polymer_dict::Dict{String,Int}, decode_dict::Dict{String,Char})
 end
 
 
-function diff_of_max_min(polymer_dict::Dict{String,Int}, init_str::String)
-    counter = count_chars(polymer_dict, init_str)
+function diff_of_max_min(polymer_dict::Dict{String,Int})
+    counter = count_chars(polymer_dict)
 
     least = min(values(counter)...)
     most = max(values(counter)...)
@@ -63,16 +63,16 @@ end
 
 function main()
     lines = readlines(FILE_NAME)
-    polymer_dict, decode_dict, init_str = interpret_data(lines)
+    polymer_dict, decode_dict = interpret_data(lines)
 
     for i in 1:40
         polymer_dict = step(polymer_dict, decode_dict)
         if i == 10
-            println("Answer of part1: $(diff_of_max_min(polymer_dict, init_str))")
+            println("Answer of part1: $(diff_of_max_min(polymer_dict))")
         end
     end
 
-    println("Answer of part2: $(diff_of_max_min(polymer_dict, init_str))")
+    println("Answer of part2: $(diff_of_max_min(polymer_dict))")
 
 end
 
